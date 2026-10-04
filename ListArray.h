@@ -56,7 +56,12 @@ template <typename T>
 std::ostream& operator <<(std::ostream &out, ListArray<T> &List) {
 
 	out << "=================" << std::endl;
-	out << "Array: " << List.arr << std::endl;
+	if (List.n == 0) out << "Array vacio.";
+	else {
+		out << "Array: [";
+		for (int i = 0; i < List.n; i++){ out << List.arr[i]; if (i != List.n - 1) out << ", "; else out << "]"; }
+	}
+	out << std::endl;
 	out << "Tamaño actual del array: " << List.max << std::endl;
 	out << "Número de elementos en el array: " << List.n << std::endl;
 	out << "=================" << std::endl;
@@ -103,7 +108,7 @@ void ListArray<T>::prepend(T e) {
 	if (n + 1 > max) resize(max * 2);
 
 	// Desplazamos todos los valores a la derecha
-	for (int i = n; i > size(); i--) arr[i] = arr[i - 1];
+	for (int i = n; i > 0; i--) arr[i] = arr[i - 1];
 
 	// Colocamos el nuevo elemento al inicio del array
 	arr[0] = e;
@@ -116,7 +121,7 @@ template <typename T>
 T ListArray<T>::remove(int pos) {
 
 	// Validamos que la posición sea válida
-	if (pos < 0 || pos > size()) throw std::out_of_range("Posición inválida! \n");
+	if (pos < 0 || pos >= size()) throw std::out_of_range("Posición inválida! \n");
 
 	// Nos guardamos una copia del elemento a eliminar
 	T aux = arr[pos];
@@ -132,7 +137,7 @@ template <typename T>
 T ListArray<T>::get(int pos) {
 	
 	// Validamos que la posición sea válida
-	if (pos < 0 || pos > size()) throw std::out_of_range("Posición inválida! \n");
+	if (pos < 0 || pos >= size()) throw std::out_of_range("Posición inválida! \n");
 
 	return arr[pos];
 }
