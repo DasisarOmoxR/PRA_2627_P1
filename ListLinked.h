@@ -52,11 +52,14 @@ ListLinked<T>::~ListLinked() {
 template <typename T>
 T ListLinked<T>::operator[](int pos) {
 
-	if (pos < 0 || pos > Node<T>::size() - 1) throw std::out_of_range("Posición invalida! \n");
+    // Definimos un auxiliar para recorrer la lista
+    Node<T>* actual = first;
+
+	if (pos < 0 || pos > n - 1) throw std::out_of_range("Posición invalida! \n");
 
 	else {
-        for (int i = 0; i < pos; i++) first = first -> next;
-        return first;
+        for (int i = 0; i < pos; i++) actual = actual -> next;
+        return actual -> data;
     }
 }
 
@@ -64,7 +67,12 @@ template <typename T>
 std::ostream& operator <<(std::ostream &out, ListLinked<T> &List) {
     
 	out << "=================" << std::endl;
-    out << "Elemento: " << List.first -> data << std::endl;
+    if (List.n == 0) out << "Lista vacia." << std::endl;
+	else {
+		out << "Lista: [";
+        Node<T>* actual = List.first; // Definimos un auxiliar para recorrer la lista
+		while (actual != nullptr) { out << actual -> data; if (actual -> next != nullptr) out << ", "; else out << "]" << std::endl; actual = actual -> next; }
+	}
 	out << "=================" << std::endl;
 
 	return out;
@@ -74,17 +82,23 @@ template <typename T>
 void ListLinked<T>::insert(int pos, T e) {
 
 	// Validamos que la posición sea válida
-	if (pos < 0) throw std::out_of_range("Posición inválida! \n");
+	if (pos < 0|| pos > n) throw std::out_of_range("Posición inválida! \n");
 
     // Creamos un nuevo nodo a partir de e
-    T nuevo_nodo = new Node(e);
+    Node<T>* nuevo_nodo = new Node<T>(e);
+
+    // Caso especial: Lista vacia
+    if (pos == 0) { prepend(e); return; }
+
+    // Definimos un auxiliar para recorrer la lista
+    Node<T>* actual = first;
 
     // Nos desplazamos hasta el puntero que queremos que apunte al nuevo nodo
-    for (int i = 0; i < pos - 1; i++) first = first -> next;
+    for (int i = 0; i < pos - 1; i++) actual = actual -> next;
 
     // Insertamos el nuevo elemento y actualizamos su puntero
-    T aux = first -> next
-    first -> next = nuevo_nodo:
+    Node<T>* aux = actual -> next;
+    actual -> next = nuevo_nodo;
     nuevo_nodo -> next = aux;
 
 	// Incrementamos el número de elementos de la lista 
@@ -94,15 +108,24 @@ void ListLinked<T>::insert(int pos, T e) {
 template <typename T>
 void ListLinked<T>::append(T e) {
 
+    // Creamos un nuevo nodo a partir de e
+    Node<T>* nuevo_nodo = new Node<T>(e);
+
+    // Caso especial: Lista vacia
+    if (first == nullptr) {
+        first = nuevo_nodo;
+        n++;
+    return;
+    }
+
+    // Definimos un auxiliar para recorrer la lista
+    Node<T>* actual = first;
 
     // Nos desplazamos hasta el puntero que apunte a nullptr (final de la lista)
-    while (first -> next != nullptr) first = first -> next;
-
-    // Creamos un nuevo nodo a partir de e
-    T nuevo_nodo = new Node(e);
+    while (actual -> next != nullptr) actual = actual -> next;
 
     // Insertamos el nuevo elemento
-    first -> next = nuevo_nodo;
+    actual -> next = nuevo_nodo;
 
 	// Incrementamos el número de elementos del array
 	n++;
@@ -112,13 +135,12 @@ template <typename T>
 void ListLinked<T>::prepend(T e) {
 
     // Creamos un nuevo nodo a partir de e
-    T nuevo_nodo = new Node(e);
+    Node<T>* nuevo_nodo = new Node<T>(e);
 
 	// Colocamos el nuevo elemento al inicio de la lista y actualizamos su puntero
-    T aux = first;
-	first = nuevo_nodo:
-    first -> next = aux;
-
+    nuevo_nodo -> next = first;
+	first = nuevo_nodo;
+    
 	// Incrementamos el número de elementos del array
 	n++;
 }
@@ -127,21 +149,41 @@ template <typename T>
 T ListLinked<T>::remove(int pos) {
 
 	// Validamos que la posición sea válida
-	if (pos < 0) throw std::out_of_range("Posición inválida! \n");
+	if (pos < 0 || pos >= n) throw std::out_of_range("Posición inválida! \n");
 
-	
+    // Caso especial: Primera posición
+    if (pos == 0) {
+
+        Node<T>* aux = first;
+
+        T dato = aux -> data;
+        first = first -> next;
+
+        delete aux;
+        n--;
+
+        return dato;
+    }
+
+
+    // Definimos un auxiliar para recorrer la lista
+    Node<T>* actual = first;
+
     // Nos desplazamos hasta el puntero que apunta al elemento a eliminar
-    for (int i = 0; i < pos - 1; i++) first = first -> next;
+    for (int i = 0; i < pos - 1; i++) actual = actual -> next;
 
-    // Nos guardamos una copia del elemento a eliminar
-	T aux = first -> next;
+    // Nos guardamos una copia del dato del elemento a eliminar
+    T dato = actual -> next -> data;
 
     // Eliminamos el elemento y actualizamos el puntero
-    delete first -> next
-    first next = aux -> next;
+    Node<T>* aux = actual -> next;
+    actual -> next = aux -> next;
+    delete aux;
+    aux = nullptr;
+
 
 	n--;
-	return aux;
+	return dato;
 }
 
 template <typename T>
@@ -150,18 +192,24 @@ T ListLinked<T>::get(int pos) {
 	// Validamos que la posición sea válida
 	if (pos < 0 || pos >= size()) throw std::out_of_range("Posición inválida! \n");
     
-    // Nos desplazamos hasta el puntero que apunta al elemento a devolver
-    for (int i = 0; i < pos - 1; i++) first = first -> next;
+    // Definimos un auxiliar para recorrer la lista
+    Node<T>* actual = first;
 
-	return first -> next;
+    // Nos desplazamos hasta el puntero que apunta al elemento a devolver
+    for (int i = 0; i < pos - 1; i++) actual = actual -> next;
+
+	return actual -> next -> data;
 }
 
 template <typename T>
 int ListLinked<T>::search(T e) {
 	
+    // Definimos un auxiliar para recorrer la lista
+    Node<T>* actual = first;
+
 	// Recorremos toda la lista, si entcontramos el elemento, devolvemos el índice
     int i = 0;
-	while (first != nullptr) { if (first -> data == e) return i; first = first -> next; i++;}
+	while (actual != nullptr) { if (actual -> data == e) return i; actual = actual -> next; i++;}
 
 	// Si no hemos encontrado el elemento, devolvemos -1
 	return -1;

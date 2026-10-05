@@ -1,10 +1,9 @@
 #include <ostream>
 #include <stdexcept>
 #include <iostream>
-#include "List.h"
 
 template <typename T>
-class Node : public List<T> {
+class Node {
 
     public:
 
